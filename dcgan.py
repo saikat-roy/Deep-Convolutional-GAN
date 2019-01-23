@@ -1,4 +1,5 @@
 import os
+import math
 import numpy as np
 import torch
 import torch.nn as nn
@@ -67,44 +68,51 @@ if __name__ == "__main__":
     disc_dataloader = dataloaders("custom")
 
     for epoch in range(n_epochs):
-        # TRAINING GENERATOR
-        optimizer_gen.zero_grad()
+        print("Epoch {}".format(epoch))
 
-        # CREATING A BATCH OF RANDOM NOISE IN [0,1] FOR GENERATOR INPUT
-        gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100))),requires_grad=False)
+        total = math.ceil(len(disc_dataloader)/batch_size) * batch_size * 2
+        correct_pos = 0.0
+        correct_neg = 0.0
 
-        gen_inp = gen_inp.to(device)
-        fake_images = gen_model(gen_inp)
-        gen_loss = loss(dis_model(fake_images),g_labels)
-        gen_loss.backward()
-        optimizer_gen.step()
+        for batch_id in range(math.ceil(len(disc_dataloader)/batch_size)):
+            # TRAINING GENERATOR
+            optimizer_gen.zero_grad()
+
+            # CREATING A BATCH OF RANDOM NOISE IN [0,1] FOR GENERATOR INPUT
+            gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100))),requires_grad=False)
+
+            gen_inp = gen_inp.to(device)
+            fake_images = gen_model(gen_inp)
+            gen_loss = loss(dis_model(fake_images),g_labels)
+            gen_loss.backward()
+            optimizer_gen.step()
 
 
-        # TRAINING DISCRIMINATOR
-        optimizer_dis.zero_grad()
+            # TRAINING DISCRIMINATOR
+            optimizer_dis.zero_grad()
 
-        indices = np.random.randint(high=len(disc_dataloader)-1,size=batch_size)
-        d_true_loss=loss(dis_model(disc_dataloader[indices]), d_true_labels)
-        d_fake_loss=loss(dis_model(fake_images), g_labels)
+            indices = np.random.randint(high=len(disc_dataloader)-1,size=batch_size)
+            d_true_loss=loss(dis_model(disc_dataloader[indices]), d_true_labels)
+            d_fake_loss=loss(dis_model(fake_images), g_labels)
 
-        d_loss = (d_true_labels+d_fake_loss)/2
-        d_loss.backward()
-        optimizer_dis.step()
+            d_loss = (d_true_labels+d_fake_loss)/2
+            d_loss.backward()
+            optimizer_dis.step()
 
-        total = batch_size*2
-        correct = 0.0
-        with torch.no_grad():
-            outputs = dis_model(disc_dataloader[indices])
-            _, predicted = torch.max(outputs.data, 1)
-            correct += (predicted == d_true_labels).sum().item()
+            with torch.no_grad():
+                outputs = dis_model(disc_dataloader[indices])
+                _, predicted = torch.max(outputs.data, 1)
+                correct_pos += (predicted == d_true_labels).sum().item()
 
-            outputs = dis_model(fake_images)
-            _, predicted = torch.max(outputs.data, 1)
-            correct += (predicted == g_labels).sum().item()
+                outputs = dis_model(fake_images)
+                _, predicted = torch.max(outputs.data, 1)
+                correct_neg += (predicted == g_labels).sum().item()
 
-            correct/=total
+            correct_pos/=total
+            correct_neg/=total
 
-        print("Current Discriminator Accuracy = {}".format(correct))
-
+        print("Current Discriminator Accuracy = {}".format(correct_pos+correct_neg))
+        print("Current Discriminator Positives Accuracy = {}".format(correct_pos))
+        print("Current Discriminator Negatives Accuracy = {}".format(correct_neg))
 
 
