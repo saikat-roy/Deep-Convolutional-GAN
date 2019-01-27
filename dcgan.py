@@ -18,11 +18,11 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.block = nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d(100, 512, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(512),
+            nn.ConvTranspose2d(100, 256, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(256),
             nn.LeakyReLU(True),
             # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(512, 256, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(256, 256, 4, 2, 1, bias=False),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(True),
             # state size. (ngf*4) x 8 x 8
@@ -50,19 +50,24 @@ class Discriminator(nn.Module):
         self.block = nn.Sequential(
             #nn.Dropout2d(0.2),
             nn.Conv2d(1, 16, kernel_size=(3,3),padding=1),
+            nn.BatchNorm2d(16),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             #nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(16, 32, kernel_size=(3, 3), padding=1),
+            nn.BatchNorm2d(32),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(32, 64, kernel_size=(3,3),padding=1),
+            nn.BatchNorm2d(64),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1),
+            nn.BatchNorm2d(128),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(128, 256, kernel_size=(3,3),padding=1),
+            nn.BatchNorm2d(256),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2,stride=2),
             nn.AvgPool2d(kernel_size=(2,2))
@@ -103,22 +108,36 @@ def generate_images(gen_model, epoch_no, batch_size=60):
     gen_inp = gen_inp.to(device)
     fake_images = gen_model(gen_inp)
 
-    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=6, padding=2, normalize=True)
+    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, padding=2, normalize=True)
+    #save_image(1*(fake_images>0.5), "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
+
+
+
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
 
 
 if __name__ == "__main__":
 
     image_size = 64
-    batch_size = 1024
+    batch_size = 128
     n_epochs = 200
 
     gen_lr = 1e-4
-    dis_lr = 1e-4
+    dis_lr = 1e-5
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     gen_model = Generator().to(device)
     dis_model = Discriminator().to(device)
+
+    gen_model.apply(weights_init)
+    dis_model.apply(weights_init)
 
     optimizer_gen = optim.Adam(gen_model.parameters(), lr=gen_lr)
     optimizer_dis = optim.Adam(dis_model.parameters(), lr=dis_lr)
@@ -127,11 +146,11 @@ if __name__ == "__main__":
     print(summary(dis_model, input_size=(1,64,64)))
     #exit(0)
 
-    g_labels = Variable(torch.Tensor(batch_size, 1).fill_(1.0), requires_grad=False).to(device)
-    d_true_labels = Variable(torch.Tensor(batch_size, 1).fill_(0.0), requires_grad=False).to(device)
+    g_labels = Variable(torch.Tensor(batch_size, 1).fill_(0.0), requires_grad=False).to(device)
+    d_true_labels = Variable(torch.Tensor(batch_size, 1).fill_(1.0), requires_grad=False).to(device)
 
-    place_holder_false = np.ones([batch_size, 1])
-    place_holder_true = np.zeros([batch_size, 1])
+    place_holder_true = np.ones([batch_size, 1])
+    place_holder_false = np.zeros([batch_size, 1])
 
     loss = nn.BCELoss()
 
@@ -175,7 +194,7 @@ if __name__ == "__main__":
             optimizer_dis.zero_grad()
 
             true_images = true_images.to(device)
-
+            fake_copy = fake_images.clone()
             d_true_loss=torch.mean(loss(dis_model(true_images), d_true_labels))
             d_fake_loss=torch.mean(loss(dis_model(fake_images.detach()), g_labels)) # Have to detach from graph for some reason
 
@@ -185,10 +204,11 @@ if __name__ == "__main__":
                 print("discriminator updated")
                 d_loss.backward()
                 optimizer_dis.step()
+            #if g_loss.item()>0.75
 
             gen_loss_epoch+=gen_loss.item()
             disc_loss_epoch+=d_loss.item()
-            print(gen_loss, d_loss)
+            print(gen_loss.item(), d_loss.item())
 
 
             with torch.no_grad():
@@ -196,6 +216,7 @@ if __name__ == "__main__":
                 #_, predicted = torch.max(outputs.data, 1)
                 #print(outputs)
                 predicted = (outputs > 0.5).to("cpu").numpy()
+                batch_disc_acc = (predicted == place_holder_true).sum()/batch_size
                 correct_pos += (predicted == place_holder_true).sum()
 
                 outputs = dis_model(fake_images.detach())
@@ -207,14 +228,19 @@ if __name__ == "__main__":
                 outputs = dis_model(fake_images.detach())
                 # _, predicted = torch.max(outputs.data, 1)
                 predicted = (outputs > 0.5).to("cpu").numpy()
-                batch_gen_acc = (predicted == place_holder_true).sum()
+                batch_gen_acc = (predicted == place_holder_true).sum()/batch_size
                 gen_acc += (predicted == place_holder_true).sum()
 
-            # if batch_gen_acc/batch_size>0.5:
+            #print(batch_gen_acc, batch_disc_acc+(1-batch_gen_acc))
+            #if batch_disc_acc+(1-batch_gen_acc)<0.4:
             #     print("discriminator updated")
             #     d_loss.backward()
             #     optimizer_dis.step()
-            
+            #if batch_gen_acc<0.75:
+            #    print("generator updated")
+            #    gen_loss.backward()
+            #    optimizer_gen.step()
+
 
         correct_pos/=total
         correct_neg/=total
@@ -230,8 +256,8 @@ if __name__ == "__main__":
         with open("./saved_data/loss_epoch_mnist", "wb") as f:
             pickle.dump(loss_list, f)
 
-        if epoch%5==0:
-            generate_images(gen_model, epoch, 36)
+        #if epoch%5==0:
+        generate_images(gen_model, epoch, 100)
 
 
         torch.save(gen_model.state_dict(), "./saved_data/generator_mnist")
