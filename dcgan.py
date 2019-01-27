@@ -64,14 +64,14 @@ class Discriminator(nn.Module):
         )
         self.out = nn.Sequential(
             nn.Linear(256,1),
-            #nn.Sigmoid()
+            nn.Sigmoid()
         )
 
 
     def forward(self, x):
         x = self.block(x)
         x = x.view(-1,x.size(1))
-        print(x.size())
+        #print(x.size())
         return self.out(x)
 
 
@@ -93,7 +93,7 @@ def dataloaders(name):
 if __name__ == "__main__":
 
     image_size = 64
-    batch_size = 8
+    batch_size = 32
     n_epochs = 100
 
     gen_lr = 1e-4
@@ -112,21 +112,26 @@ if __name__ == "__main__":
     #exit(0)
 
     g_labels = Variable(torch.Tensor(batch_size, 1).fill_(1.0), requires_grad=False).to(device)
-    d_true_labels = Variable(torch.Tensor(batch_size, 1).fill_(0.0), requires_grad=False)#.to(device)
+    d_true_labels = Variable(torch.Tensor(batch_size, 1).fill_(0.0), requires_grad=False).to(device)
 
-    loss = nn.BCEWithLogitsLoss()
+    loss = nn.BCELoss()
 
     disc_dataloader = dataloaders("custom")
 
     for epoch in range(n_epochs):
         print("Epoch {}".format(epoch))
 
-        total = math.ceil(len(disc_dataloader)/batch_size) * batch_size * 2
+        #total = len(disc_dataloader) * 2
+        total = 10 * 2
         correct_pos = 0.0
         correct_neg = 0.0
 
-        for batch_id in range(math.ceil(len(disc_dataloader)/batch_size)):
+        for batch_id, (true_images,_) in enumerate(disc_dataloader, 0):
             # TRAINING GENERATOR
+
+            if batch_id == 100:
+                break
+
             optimizer_gen.zero_grad()
 
             # CREATING A BATCH OF RANDOM NOISE IN [0,1] FOR GENERATOR INPUT
@@ -134,7 +139,7 @@ if __name__ == "__main__":
 
             gen_inp = gen_inp.to(device)
             fake_images = gen_model(gen_inp)
-            print(fake_images.size())
+            #print(fake_images.size())
             gen_loss = loss(dis_model(fake_images), g_labels)
             gen_loss.backward()
             optimizer_gen.step()
@@ -143,23 +148,31 @@ if __name__ == "__main__":
             # TRAINING DISCRIMINATOR
             optimizer_dis.zero_grad()
 
-            indices = np.random.randint(len(disc_dataloader)-1,size=batch_size, dtype=int)
-            print(indices)
-            d_true_loss=loss(dis_model(disc_dataloader[indices]), d_true_labels)
-            d_fake_loss=loss(dis_model(fake_images), g_labels)
+            true_images = true_images.to(device)
 
-            d_loss = (d_true_labels+d_fake_loss)/2
+            d_true_loss=torch.mean(loss(dis_model(true_images), d_true_labels))
+            d_fake_loss=torch.mean(loss(dis_model(fake_images.detach()), g_labels)) # Have to detach from graph for some reason
+
+            d_loss = (d_true_loss+d_fake_loss)/2
+            #print(d_loss)
             d_loss.backward()
             optimizer_dis.step()
 
-            with torch.no_grad():
-                outputs = dis_model(disc_dataloader[indices])
-                _, predicted = torch.max(outputs.data, 1)
-                correct_pos += (predicted == d_true_labels).sum().item()
+            place_holder_true = np.ones([batch_size,1])
+            place_holder_false = np.zeros([batch_size, 1])
 
-                outputs = dis_model(fake_images)
-                _, predicted = torch.max(outputs.data, 1)
-                correct_neg += (predicted == g_labels).sum().item()
+            with torch.no_grad():
+                outputs = dis_model(true_images)
+                #_, predicted = torch.max(outputs.data, 1)
+                #print(outputs)
+                predicted = (outputs > 0.5).to("cpu").numpy()
+                #print((predicted == place_holder_true).sum())
+                correct_pos += (predicted == place_holder_true).sum()
+
+                outputs = dis_model(fake_images.detach())
+                #_, predicted = torch.max(outputs.data, 1)
+                predicted = (outputs > 0.5).to("cpu").numpy()
+                correct_neg += (predicted == place_holder_false).sum()
 
             correct_pos/=total
             correct_neg/=total
