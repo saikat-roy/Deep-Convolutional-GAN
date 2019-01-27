@@ -107,8 +107,8 @@ if __name__ == "__main__":
     optimizer_gen = optim.Adam(gen_model.parameters(), lr=gen_lr)
     optimizer_dis = optim.Adam(dis_model.parameters(), lr=dis_lr)
 
-    print(summary(gen_model, input_size=(100,1,1)))
-    print(summary(dis_model, input_size=(1,64,64)))
+    #print(summary(gen_model, input_size=(100,1,1)))
+    #print(summary(dis_model, input_size=(1,64,64)))
     #exit(0)
 
     g_labels = Variable(torch.Tensor(batch_size, 1).fill_(1.0), requires_grad=False).to(device)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         print("Epoch {}".format(epoch))
 
         #total = len(disc_dataloader) * 2
-        total = 10 * 2
+        total = 100 * batch_size * 2
         correct_pos = 0.0
         correct_neg = 0.0
 
