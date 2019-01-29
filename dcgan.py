@@ -12,27 +12,27 @@ import torchvision.transforms as transforms
 from torchvision.utils import save_image
 from torchsummary import summary
 
-class Generator(nn.Module):
+class GeneratorB(nn.Module):
 
     def __init__(self):
-        super(Generator, self).__init__()
+        super(GeneratorB, self).__init__()
         self.block = nn.Sequential(
             # input is Z, going into a convolution
             nn.ConvTranspose2d(100, 256, 4, 1, 0, bias=False),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(True),
+            nn.LeakyReLU(0.2,True),
             # state size. (ngf*8) x 4 x 4
             nn.ConvTranspose2d(256, 256, 4, 2, 1, bias=False),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(True),
+            nn.LeakyReLU(0.2,True),
             # state size. (ngf*4) x 8 x 8
             nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(True),
+            nn.LeakyReLU(0.2,True),
             # state size. (ngf*2) x 16 x 16
             nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(True),
+            nn.LeakyReLU(0.2,True),
             # state size. (ngf) x 32 x 32
             nn.ConvTranspose2d(64, 1, 4, 2, 1, bias=False),
             nn.Tanh()
@@ -43,56 +43,119 @@ class Generator(nn.Module):
         return self.block(x)
 
 
-class Discriminator(nn.Module):
+class DiscriminatorB(nn.Module):
 
     def __init__(self):
-        super(Discriminator, self).__init__()
+        super(DiscriminatorB, self).__init__()
         self.block = nn.Sequential(
             #nn.Dropout2d(0.2),
-            nn.Conv2d(1, 16, kernel_size=(3,3),padding=1),
+            nn.Conv2d(1, 16, kernel_size=(3,3),padding=1, bias=False),
             nn.BatchNorm2d(16),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2,inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             #nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(16, 32, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(16, 32, kernel_size=(3, 3), padding=1, bias=False),
             nn.BatchNorm2d(32),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2,inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=(3,3),padding=1),
+            nn.Conv2d(32, 64, kernel_size=(3,3),padding=1, bias=False),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2,inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1, bias=False),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(128, 256, kernel_size=(3,3),padding=1),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2,stride=2),
-            nn.AvgPool2d(kernel_size=(2,2))
-            #nn.Linear(512,2)
-        )
-        self.out = nn.Sequential(
-            nn.Linear(256,1),
+            nn.Conv2d(128, 1, kernel_size=(3,3),padding=1, bias=False),
+            #nn.BatchNorm2d(1),
+            #nn.LeakyReLU(inplace=True),
+            #nn.MaxPool2d(kernel_size=2,stride=2),
+            nn.AvgPool2d(kernel_size=(4,4)),
             nn.Sigmoid()
+            #nn.Linear(512,2)
         )
 
 
     def forward(self, x):
         x = self.block(x)
-        x = x.view(-1,x.size(1))
+        x = x.view(-1)
         #print(x.size())
-        return self.out(x)
+        return x
+
+
+nc =1
+ndf = 64
+ngf = 128
+nz = 100
+
+class Generator(nn.Module):
+    def __init__(self):
+        super(Generator, self).__init__()
+        self.main = nn.Sequential(
+                    # input is Z, going into a convolution
+            nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(ngf * 8),
+            nn.ReLU(True),
+                    # state size. (ngf*8) x 4 x 4
+            nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 4),
+            nn.ReLU(True),
+                    # state size. (ngf*4) x 8 x 8
+            nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 2),
+            nn.ReLU(True),
+                    # state size. (ngf*2) x 16 x 16
+            nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf),
+            nn.ReLU(True),
+                    # state size. (ngf) x 32 x 32
+            nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
+            nn.Tanh()
+                    # state size. (nc) x 64 x 64
+        )
+
+    def forward(self, input):
+        return self.main(input)
+
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.main = nn.Sequential(
+                    # input is (nc) x 64 x 64
+            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+                    # state size. (ndf) x 32 x 32
+            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+                    # state size. (ndf*2) x 16 x 16
+            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+                    # state size. (ndf*4) x 8 x 8
+            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+                    # state size. (ndf*8) x 4 x 4
+            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, input):
+        x = self.main(input)
+        return x.view(-1)
+
 
 
 def dataloaders(name):
 
     os.makedirs('./data/mnist', exist_ok=True)
     dataloader = torch.utils.data.DataLoader(
-        datasets.MNIST('./data/mnist', train=True, download=True,
+        datasets.MNIST('./data/mnist', train=False, download=True,
                        transform=transforms.Compose([
                            transforms.Resize(image_size),
+                           transforms.CenterCrop(image_size),
                            transforms.ToTensor(),
                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
                        ])),
@@ -101,15 +164,17 @@ def dataloaders(name):
     return dataloader
 
 def generate_images(gen_model, epoch_no, batch_size=60):
-
-    gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100, 1, 1))), requires_grad=False)
+    #gen_model.eval()
+    #gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100, 1, 1))), requires_grad=False)
+    gen_inp = torch.randn(batch_size, 100, 1, 1, device=device)
     #print(gen_inp[0:5])
 
     gen_inp = gen_inp.to(device)
     fake_images = gen_model(gen_inp)
 
-    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, padding=2, normalize=True)
-    #save_image(1*(fake_images>0.5), "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
+    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, normalize=True)
+    #fake_images = fake_images.detach().cpu()
+    #save_image(fake_images, "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
 
 
 
@@ -126,10 +191,10 @@ if __name__ == "__main__":
 
     image_size = 64
     batch_size = 128
-    n_epochs = 200
+    n_epochs = 25
 
-    gen_lr = 1e-4
-    dis_lr = 1e-5
+    gen_lr = 1e-3
+    dis_lr = 1e-4
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -139,20 +204,22 @@ if __name__ == "__main__":
     gen_model.apply(weights_init)
     dis_model.apply(weights_init)
 
-    optimizer_gen = optim.Adam(gen_model.parameters(), lr=gen_lr)
-    optimizer_dis = optim.Adam(dis_model.parameters(), lr=dis_lr)
+    optimizer_gen = optim.Adam(gen_model.parameters(), lr=gen_lr, betas=(0.5, 0.999))
+    optimizer_dis = optim.Adam(dis_model.parameters(), lr=dis_lr, betas=(0.5, 0.999))
 
-    #print(summary(gen_model, input_size=(100,1,1)))
+    print(summary(gen_model, input_size=(100,1,1)))
     print(summary(dis_model, input_size=(1,64,64)))
     #exit(0)
 
-    g_labels = Variable(torch.Tensor(batch_size, 1).fill_(0.0), requires_grad=False).to(device)
-    d_true_labels = Variable(torch.Tensor(batch_size, 1).fill_(1.0), requires_grad=False).to(device)
+    true_labels = 1.0   # CHANGE TO ZERO TO FLIP LABELS
 
-    place_holder_true = np.ones([batch_size, 1])
-    place_holder_false = np.zeros([batch_size, 1])
+    d_true_labels = Variable(torch.Tensor(batch_size).fill_(true_labels), requires_grad=False).to(device)
+    g_labels = Variable(torch.Tensor(batch_size).fill_(1.0-true_labels), requires_grad=False).to(device)
 
-    loss = nn.BCELoss()
+    place_holder_true = np.ones([batch_size]) * true_labels
+    place_holder_false = np.ones([batch_size]) * (1.0-true_labels)
+
+    loss = nn.BCELoss().to(device)
 
     loss_list = []
 
@@ -171,16 +238,40 @@ if __name__ == "__main__":
         gen_loss_epoch = 0
 
         for batch_id, (true_images,_) in enumerate(disc_dataloader, 0):
+
+            gen_model.train()
+            dis_model.train()
+
+            optimizer_dis.zero_grad()
+            gen_inp_1 = torch.randn(batch_size, 100, 1, 1, device=device, requires_grad=False)
+
+            # gen_inp = gen_inp.to(device)
+            fake_images = gen_model(gen_inp_1)
+            # TRAINING DISCRIMINATOR
+
+            true_images = true_images.to(device)
+            # print(loss(dis_model(true_images), d_true_labels))
+            # print(loss(dis_model(fake_images.detach()), g_labels))
+            d_true_loss = loss(dis_model(true_images), d_true_labels)
+            d_fake_loss = loss(dis_model(fake_images.detach()), g_labels)  # Have to detach from graph for some reason
+
+            d_loss = (d_true_loss + d_fake_loss) / 2
+
+            # if d_loss.item()>0.6:
+            #    print("discriminator updated")
+            d_true_loss.backward()
+            d_fake_loss.backward()
+            optimizer_dis.step()
+            # if g_loss.item()>0.75
+
+
             # TRAINING GENERATOR
 
             optimizer_gen.zero_grad()
 
             # CREATING A BATCH OF RANDOM NOISE IN [0,1] FOR GENERATOR INPUT
-            gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100, 1, 1))),requires_grad=False)
+            #gen_inp = Variable(torch.Tensor(np.random.normal(0, 1, (batch_size, 100, 1, 1))),requires_grad=False)
             #print(gen_inp[0:5])
-
-            gen_inp = gen_inp.to(device)
-            fake_images = gen_model(gen_inp)
 
             #save_image(fake_images[0:32], "img{}.png".format(batch_id%5), nrow=8, padding=2, normalize=True)
 
@@ -189,27 +280,9 @@ if __name__ == "__main__":
             gen_loss.backward()
             optimizer_gen.step()
 
-
-            # TRAINING DISCRIMINATOR
-            optimizer_dis.zero_grad()
-
-            true_images = true_images.to(device)
-            fake_copy = fake_images.clone()
-            d_true_loss=torch.mean(loss(dis_model(true_images), d_true_labels))
-            d_fake_loss=torch.mean(loss(dis_model(fake_images.detach()), g_labels)) # Have to detach from graph for some reason
-
-            d_loss = (d_true_loss+d_fake_loss)/2
-
-            if d_loss.item()>0.6:
-                print("discriminator updated")
-                d_loss.backward()
-                optimizer_dis.step()
-            #if g_loss.item()>0.75
-
-            gen_loss_epoch+=gen_loss.item()
-            disc_loss_epoch+=d_loss.item()
-            print(gen_loss.item(), d_loss.item())
-
+            gen_loss_epoch += gen_loss.item()
+            disc_loss_epoch += d_loss.item()
+            #print(gen_loss.item(), d_loss.item())
 
             with torch.no_grad():
                 outputs = dis_model(true_images)
@@ -220,9 +293,11 @@ if __name__ == "__main__":
                 correct_pos += (predicted == place_holder_true).sum()
 
                 outputs = dis_model(fake_images.detach())
+                #print(outputs)
                 #_, predicted = torch.max(outputs.data, 1)
                 predicted = (outputs > 0.5).to("cpu").numpy()
-                print((predicted == place_holder_false).sum())
+                #print(predicted, place_holder_false)
+                #print((predicted == place_holder_false).sum())
                 correct_neg += (predicted == place_holder_false).sum()
 
                 outputs = dis_model(fake_images.detach())
@@ -255,6 +330,8 @@ if __name__ == "__main__":
         import pickle
         with open("./saved_data/loss_epoch_mnist", "wb") as f:
             pickle.dump(loss_list, f)
+
+        print(gen_loss_epoch / len(disc_dataloader), disc_loss_epoch / len(disc_dataloader))
 
         #if epoch%5==0:
         generate_images(gen_model, epoch, 100)
