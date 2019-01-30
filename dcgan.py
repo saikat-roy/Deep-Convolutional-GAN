@@ -184,7 +184,7 @@ def generate_images(gen_model, epoch_no, batch_size=60):
     gen_inp = gen_inp.to(device)
     fake_images = gen_model(gen_inp)
 
-    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, normalize=False)
+    save_image(fake_images, "./saved_data/LSUN/gen_LSUN_img{}.png".format(epoch_no), nrow=10, normalize=False)
     #fake_images = fake_images.detach().cpu()
     #save_image(fake_images, "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
 
@@ -340,7 +340,7 @@ if __name__ == "__main__":
 
         loss_list.append((gen_loss_epoch/len(disc_dataloader),disc_loss_epoch/len(disc_dataloader)))
         import pickle
-        with open("./saved_data/loss_epoch_mnist", "wb") as f:
+        with open("./saved_data/LSUN/loss_epoch_LSUN ", "wb") as f:
             pickle.dump(loss_list, f)
 
         print(gen_loss_epoch / len(disc_dataloader), disc_loss_epoch / len(disc_dataloader))
@@ -349,5 +349,5 @@ if __name__ == "__main__":
         generate_images(gen_model, epoch, 100)
 
 
-        torch.save(gen_model.state_dict(), "./saved_data/generator_mnist")
-        torch.save(dis_model.state_dict(), "./saved_data/discriminator_mnist")
+        torch.save(gen_model.state_dict(), "./saved_data/LSUN/generator_LSUN")
+        torch.save(dis_model.state_dict(), "./saved_data/LSUN/discriminator_LSUN")
