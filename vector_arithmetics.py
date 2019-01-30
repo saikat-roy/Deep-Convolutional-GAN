@@ -35,7 +35,7 @@ if __name__ == "__main__":
     gen_model = Generator()
     gen_model.load_state_dict(torch.load(model_save_path))
 
-    n_samples = 1
+    n_samples = 3
     print("Selecting Vector Set 1")
     vector_set1 = make_vector_set(n_samples=n_samples)
     print("Selecting Vector Set 2")

@@ -84,7 +84,7 @@ from utils import CustomFaces
 #         return x
 #
 
-nc = 3
+nc = 1
 ndf = 64
 ngf = 128
 nz = 100
@@ -166,7 +166,7 @@ def dataloaders(name):
         #os.makedirs('./data/lsun', exist_ok=True)
         dataset = datasets.LSUN(r"/home/data/LSUN" ,["church_outdoor_train"], transforms_list)
     elif name == "imagenet":
-        return NotImplementedError
+        dataset = datasets.ImageFolder(r"/home/data/IMAGENET-1K/val/images", transforms_list)
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
@@ -184,7 +184,7 @@ def generate_images(gen_model, epoch_no, batch_size=60):
     gen_inp = gen_inp.to(device)
     fake_images = gen_model(gen_inp)
 
-    save_image(fake_images, "./saved_data/LSUN/gen_LSUN_img{}.png".format(epoch_no), nrow=10, normalize=False)
+    save_image(fake_images, "./saved_data/ImageNet/gen_Imagenet_img{}.png".format(epoch_no), nrow=10, normalize=False)
     #fake_images = fake_images.detach().cpu()
     #save_image(fake_images, "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
     loss_list = []
 
-    disc_dataloader = dataloaders("LSUN")
+    disc_dataloader = dataloaders("imagenet")
 
     for epoch in range(n_epochs):
         print("Epoch {}".format(epoch))
@@ -340,7 +340,7 @@ if __name__ == "__main__":
 
         loss_list.append((gen_loss_epoch/len(disc_dataloader),disc_loss_epoch/len(disc_dataloader)))
         import pickle
-        with open("./saved_data/LSUN/loss_epoch_LSUN ", "wb") as f:
+        with open("./saved_data/ImageNet/loss_epoch_ImageNet ", "wb") as f:
             pickle.dump(loss_list, f)
 
         print(gen_loss_epoch / len(disc_dataloader), disc_loss_epoch / len(disc_dataloader))
@@ -349,5 +349,5 @@ if __name__ == "__main__":
         generate_images(gen_model, epoch, 100)
 
 
-        torch.save(gen_model.state_dict(), "./saved_data/LSUN/generator_LSUN")
-        torch.save(dis_model.state_dict(), "./saved_data/LSUN/discriminator_LSUN")
+        torch.save(gen_model.state_dict(), "./saved_data/ImageNet/generator_ImageNet")
+        torch.save(dis_model.state_dict(), "./saved_data/ImageNet/discriminator_ImageNet")
