@@ -31,6 +31,9 @@ class CustomFaces(Dataset):
 
 
 
+def load_and_plot():
+    return NotImplementedError
+
 
 if __name__ == "__main__":
     c = CustomFaces(r"/home/saikat/PycharmProjects/DCGAN/data/custom_face")
