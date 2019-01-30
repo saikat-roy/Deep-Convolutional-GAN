@@ -12,78 +12,79 @@ import torchvision.transforms as transforms
 from torchvision.utils import save_image
 from torchsummary import summary
 
-class GeneratorB(nn.Module):
+from utils import CustomFaces
+# class GeneratorB(nn.Module):
+#
+#     def __init__(self):
+#         super(GeneratorB, self).__init__()
+#         self.block = nn.Sequential(
+#             # input is Z, going into a convolution
+#             nn.ConvTranspose2d(100, 256, 4, 1, 0, bias=False),
+#             nn.BatchNorm2d(256),
+#             nn.LeakyReLU(0.2,True),
+#             # state size. (ngf*8) x 4 x 4
+#             nn.ConvTranspose2d(256, 256, 4, 2, 1, bias=False),
+#             nn.BatchNorm2d(256),
+#             nn.LeakyReLU(0.2,True),
+#             # state size. (ngf*4) x 8 x 8
+#             nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
+#             nn.BatchNorm2d(128),
+#             nn.LeakyReLU(0.2,True),
+#             # state size. (ngf*2) x 16 x 16
+#             nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
+#             nn.BatchNorm2d(64),
+#             nn.LeakyReLU(0.2,True),
+#             # state size. (ngf) x 32 x 32
+#             nn.ConvTranspose2d(64, 1, 4, 2, 1, bias=False),
+#             nn.Tanh()
+#             # state size. (nc) x 64 x 64
+#         )
+#
+#     def forward(self, x):
+#         return self.block(x)
+#
+#
+# class DiscriminatorB(nn.Module):
+#
+#     def __init__(self):
+#         super(DiscriminatorB, self).__init__()
+#         self.block = nn.Sequential(
+#             #nn.Dropout2d(0.2),
+#             nn.Conv2d(1, 16, kernel_size=(3,3),padding=1, bias=False),
+#             nn.BatchNorm2d(16),
+#             nn.LeakyReLU(0.2,inplace=True),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#             #nn.MaxPool2d(kernel_size=2, stride=2),
+#             nn.Conv2d(16, 32, kernel_size=(3, 3), padding=1, bias=False),
+#             nn.BatchNorm2d(32),
+#             nn.LeakyReLU(0.2,inplace=True),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#             nn.Conv2d(32, 64, kernel_size=(3,3),padding=1, bias=False),
+#             nn.BatchNorm2d(64),
+#             nn.LeakyReLU(0.2,inplace=True),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#             nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1, bias=False),
+#             nn.BatchNorm2d(128),
+#             nn.LeakyReLU(0.2, inplace=True),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#             nn.Conv2d(128, 1, kernel_size=(3,3),padding=1, bias=False),
+#             #nn.BatchNorm2d(1),
+#             #nn.LeakyReLU(inplace=True),
+#             #nn.MaxPool2d(kernel_size=2,stride=2),
+#             nn.AvgPool2d(kernel_size=(4,4)),
+#             nn.Sigmoid()
+#             #nn.Linear(512,2)
+#         )
+#
+#
+#     def forward(self, x):
+#         x = self.block(x)
+#         x = x.view(-1)
+#         #print(x.size())
+#         return x
+#
 
-    def __init__(self):
-        super(GeneratorB, self).__init__()
-        self.block = nn.Sequential(
-            # input is Z, going into a convolution
-            nn.ConvTranspose2d(100, 256, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2,True),
-            # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(256, 256, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2,True),
-            # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2,True),
-            # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2,True),
-            # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d(64, 1, 4, 2, 1, bias=False),
-            nn.Tanh()
-            # state size. (nc) x 64 x 64
-        )
-
-    def forward(self, x):
-        return self.block(x)
-
-
-class DiscriminatorB(nn.Module):
-
-    def __init__(self):
-        super(DiscriminatorB, self).__init__()
-        self.block = nn.Sequential(
-            #nn.Dropout2d(0.2),
-            nn.Conv2d(1, 16, kernel_size=(3,3),padding=1, bias=False),
-            nn.BatchNorm2d(16),
-            nn.LeakyReLU(0.2,inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            #nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(16, 32, kernel_size=(3, 3), padding=1, bias=False),
-            nn.BatchNorm2d(32),
-            nn.LeakyReLU(0.2,inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=(3,3),padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2,inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(128, 1, kernel_size=(3,3),padding=1, bias=False),
-            #nn.BatchNorm2d(1),
-            #nn.LeakyReLU(inplace=True),
-            #nn.MaxPool2d(kernel_size=2,stride=2),
-            nn.AvgPool2d(kernel_size=(4,4)),
-            nn.Sigmoid()
-            #nn.Linear(512,2)
-        )
-
-
-    def forward(self, x):
-        x = self.block(x)
-        x = x.view(-1)
-        #print(x.size())
-        return x
-
-
-nc =1
+nc = 3
 ndf = 64
 ngf = 128
 nz = 100
@@ -149,17 +150,28 @@ class Discriminator(nn.Module):
 
 
 def dataloaders(name):
+    transforms_list = transforms.Compose([
+        transforms.Resize(image_size),
+        transforms.CenterCrop(image_size),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
+    if name == "mnist":
+        os.makedirs('./data/mnist', exist_ok=True)
+        dataset = datasets.MNIST('./data/mnist', train=False, download=True,
+                       transform=transforms_list)
+    elif name == "custom_faces":
+        dataset = CustomFaces(r"/home/saikat/PycharmProjects/DCGAN/data/custom_face", transform=transforms_list)
+    elif name == "LSUN":
+        #os.makedirs('./data/lsun', exist_ok=True)
+        dataset = datasets.LSUN(r"/home/data/LSUN" ,{"church_outdoor"}, transforms_list)
+    elif name == "imagenet":
+        return NotImplementedError
 
-    os.makedirs('./data/mnist', exist_ok=True)
-    dataloader = torch.utils.data.DataLoader(
-        datasets.MNIST('./data/mnist', train=False, download=True,
-                       transform=transforms.Compose([
-                           transforms.Resize(image_size),
-                           transforms.CenterCrop(image_size),
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-                       ])),
-        batch_size=batch_size, shuffle=True, drop_last=True)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+
+
+
 
     return dataloader
 
@@ -172,7 +184,7 @@ def generate_images(gen_model, epoch_no, batch_size=60):
     gen_inp = gen_inp.to(device)
     fake_images = gen_model(gen_inp)
 
-    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, normalize=True)
+    save_image(fake_images, "./saved_data/gen_mnist_img{}.png".format(epoch_no), nrow=10, normalize=False)
     #fake_images = fake_images.detach().cpu()
     #save_image(fake_images, "./saved_data/gen_mnist_img{}_method2.png".format(epoch_no), nrow=6, padding=2, normalize=False)
 
@@ -190,8 +202,8 @@ def weights_init(m):
 if __name__ == "__main__":
 
     image_size = 64
-    batch_size = 128
-    n_epochs = 25
+    batch_size = 12
+    n_epochs = 150
 
     gen_lr = 1e-3
     dis_lr = 1e-4
@@ -208,10 +220,10 @@ if __name__ == "__main__":
     optimizer_dis = optim.Adam(dis_model.parameters(), lr=dis_lr, betas=(0.5, 0.999))
 
     print(summary(gen_model, input_size=(100,1,1)))
-    print(summary(dis_model, input_size=(1,64,64)))
+    print(summary(dis_model, input_size=(3,64,64)))
     #exit(0)
 
-    true_labels = 1.0   # CHANGE TO ZERO TO FLIP LABELS
+    true_labels = 0.0   # CHANGE TO ZERO TO FLIP LABELS
 
     d_true_labels = Variable(torch.Tensor(batch_size).fill_(true_labels), requires_grad=False).to(device)
     g_labels = Variable(torch.Tensor(batch_size).fill_(1.0-true_labels), requires_grad=False).to(device)
@@ -223,7 +235,7 @@ if __name__ == "__main__":
 
     loss_list = []
 
-    disc_dataloader = dataloaders("custom")
+    disc_dataloader = dataloaders("LSUN")
 
     for epoch in range(n_epochs):
         print("Epoch {}".format(epoch))
@@ -237,8 +249,8 @@ if __name__ == "__main__":
         disc_loss_epoch = 0
         gen_loss_epoch = 0
 
+        #for batch_id, (true_images,_) in enumerate(disc_dataloader, 0): # For MNIST Example
         for batch_id, (true_images,_) in enumerate(disc_dataloader, 0):
-
             gen_model.train()
             dis_model.train()
 
