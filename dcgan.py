@@ -202,7 +202,7 @@ def weights_init(m):
 if __name__ == "__main__":
 
     image_size = 64
-    batch_size = 12
+    batch_size = 128
     n_epochs = 150
 
     gen_lr = 1e-3
