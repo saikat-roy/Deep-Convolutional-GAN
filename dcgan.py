@@ -164,7 +164,7 @@ def dataloaders(name):
         dataset = CustomFaces(r"/home/saikat/PycharmProjects/DCGAN/data/custom_face", transform=transforms_list)
     elif name == "LSUN":
         #os.makedirs('./data/lsun', exist_ok=True)
-        dataset = datasets.LSUN(r"/home/data/LSUN" ,{"church_outdoor"}, transforms_list)
+        dataset = datasets.LSUN(r"/home/data/LSUN" ,["church_outdoor_train"], transforms_list)
     elif name == "imagenet":
         return NotImplementedError
 
