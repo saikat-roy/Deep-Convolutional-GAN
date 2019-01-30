@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
     loss_list = []
 
-    disc_dataloader = dataloaders("LSUN")
+    disc_dataloader = dataloaders("imagenet")
 
     for epoch in range(n_epochs):
         print("Epoch {}".format(epoch))
@@ -340,7 +340,7 @@ if __name__ == "__main__":
 
         loss_list.append((gen_loss_epoch/len(disc_dataloader),disc_loss_epoch/len(disc_dataloader)))
         import pickle
-        with open("./saved_data/LSUN/loss_epoch_LSUN ", "wb") as f:
+        with open("./saved_data/ImageNet/loss_epoch_ImageNet ", "wb") as f:
             pickle.dump(loss_list, f)
 
         print(gen_loss_epoch / len(disc_dataloader), disc_loss_epoch / len(disc_dataloader))
