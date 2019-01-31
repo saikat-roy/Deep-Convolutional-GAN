@@ -41,7 +41,7 @@ if __name__ == "__main__":
     np.random.shuffle(index_arr)
     print(index_arr)
     training_idx = index_arr[0:75]
-    validation_idx = index_arr[25:100]
+    validation_idx = index_arr[75:100]
 
     for i in range(1000,101000,1000):
         training_idx_2=index_arr[0:75]+i
