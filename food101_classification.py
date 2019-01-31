@@ -43,7 +43,7 @@ if __name__ == "__main__":
     training_idx = index_arr[0:75]
     validation_idx = index_arr[75:100]
 
-    for i in range(1000,101000,1000):
+    for i in range(1000,101001,1000):
         training_idx_2=index_arr[0:75]+i
         training_idx = np.append(training_idx, training_idx_2)
 
