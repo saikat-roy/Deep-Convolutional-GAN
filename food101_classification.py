@@ -70,9 +70,9 @@ if __name__ == "__main__":
     dataset = datasets.ImageFolder(food_101_path, transforms_list)
 
     train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                               sampler=train_sampler)
+                                               sampler=train_sampler, drop_last=False)
     validation_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                    sampler=valid_sampler)
+                                                    sampler=valid_sampler,drop_last=False)
 
     print(len(train_loader))
     print(len(validation_loader))
@@ -85,14 +85,14 @@ if __name__ == "__main__":
     for epoch_id, (X,y) in enumerate(train_loader):
         X = X.to("cuda:0")
         i+=X.size(0)
-        train_x[(epoch_id)*X.size(0):(epoch_id+1)*X.size(0),:] = disc_new(X).detach().cpu().numpy()
-        train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y.numpy()
+        train_x[(epoch_id)*X.size(0):min((epoch_id+1)*X.size(0),train_x.shape[0]),:] = disc_new(X).detach().cpu().numpy()
+        train_y[(epoch_id) * X.size(0):min((epoch_id+1) * X.size(0),print(train_y.shape[0]))] = y.numpy()
         #print(train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)])
     print(i)
     for epoch_id, (X, y) in enumerate(validation_loader):
         X = X.to("cuda:0")
-        valid_x[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
-        valid_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y.numpy()
+        valid_x[(epoch_id) * X.size(0):min(valid_x.shape[0],(epoch_id+1) * X.size(0)), :] = disc_new(X).detach().cpu().numpy()
+        valid_y[(epoch_id) * X.size(0):min(valid_y.shape[0],(epoch_id+1) * X.size(0))] = y.numpy()
 
     print(np.unique(train_y))
     clf = SVC(gamma='auto')
