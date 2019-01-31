@@ -55,6 +55,9 @@ if __name__ == "__main__":
     train_y = np.empty((training_idx.shape[0]))
     valid_y = np.empty((validation_idx.shape[0]))
 
+    print(training_idx.shape[0])
+    print(validation_idx.shape[0])
+
     train_sampler = torch.utils.data.SubsetRandomSampler(training_idx)
     valid_sampler = torch.utils.data.SubsetRandomSampler(validation_idx)
 
@@ -78,12 +81,14 @@ if __name__ == "__main__":
     print(summary(disc_new, input_size=(3, 64, 64)))
 
     disc_new.eval()
+    i = 0
     for epoch_id, (X,y) in enumerate(train_loader):
         X = X.to("cuda:0")
+        i+=X.size(0)
         train_x[(epoch_id)*X.size(0):(epoch_id+1)*X.size(0),:] = disc_new(X).detach().cpu().numpy()
         train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y.numpy()
         #print(train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)])
-
+    print(i)
     for epoch_id, (X, y) in enumerate(validation_loader):
         X = X.to("cuda:0")
         valid_x[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
