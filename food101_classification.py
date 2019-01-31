@@ -12,7 +12,7 @@ nc = 3
 ndf = 64
 ngf = 128
 image_size = 64
-batch_size = 250
+batch_size = 5
 
 class Discriminator_trimmed(nn.Module):
 
