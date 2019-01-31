@@ -84,7 +84,7 @@ from utils import CustomFaces
 #         return x
 #
 
-nc = 1
+nc = 3
 ndf = 64
 ngf = 128
 nz = 100
@@ -166,7 +166,7 @@ def dataloaders(name):
         #os.makedirs('./data/lsun', exist_ok=True)
         dataset = datasets.LSUN(r"/home/data/LSUN" ,["church_outdoor_train"], transforms_list)
     elif name == "imagenet":
-        dataset = datasets.ImageFolder(r"/home/data/IMAGENET-1K/val/images", transforms_list)
+        dataset = datasets.ImageFolder(r"/home/data/IMAGENET-1K/val", transforms_list)
 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
