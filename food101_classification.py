@@ -94,6 +94,8 @@ if __name__ == "__main__":
         valid_x[(epoch_id) * X.size(0):min(valid_x.shape[0],(epoch_id+1) * X.size(0)), :] = disc_new(X).detach().cpu().numpy()
         valid_y[(epoch_id) * X.size(0):min(valid_y.shape[0],(epoch_id+1) * X.size(0))] = y.numpy()
 
+    print(valid_y)
+
     print(np.unique(train_y))
     clf = SVC(gamma='auto')
     clf.fit(train_x, train_y)
