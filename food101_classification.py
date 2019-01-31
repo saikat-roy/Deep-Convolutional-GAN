@@ -72,13 +72,16 @@ if __name__ == "__main__":
     disc_new = disc_new.to("cuda:0")
     print(summary(disc_new, input_size=(3, 64, 64)))
 
+    disc_new.eval()
     for epoch_id, (X,y) in enumerate(train_loader):
-        train_x[(epoch_id-1)*X.size(0):(epoch_id)*X.size(0),:] = disc_new(X)
+        X = X.to("cuda:0")
+        train_x[(epoch_id-1)*X.size(0):(epoch_id)*X.size(0),:] = disc_new(X).numpy()
         train_y[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0)] = y
 
     for epoch_id, (X, y) in enumerate(validation_loader):
         valid_x[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0), :] = disc_new(X)
         valid_y[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0)] = y
+
 
 
 
