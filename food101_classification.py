@@ -49,10 +49,10 @@ if __name__ == "__main__":
         validation_idx_2 = index_arr[75:100] + i
         validation_idx = np.append(validation_idx, validation_idx_2)
 
-    train_x = np.empty(training_idx.shape[0], 512 * 4 * 4)
-    valid_x = np.empty(validation_idx.shape[0], 512 * 4 * 4)
-    train_y = np.empty(training_idx.shape[0])
-    valid_y = np.empty(validation_idx.shape[0])
+    train_x = np.empty((training_idx.shape[0], 512 * 4 * 4))
+    valid_x = np.empty((validation_idx.shape[0], 512 * 4 * 4))
+    train_y = np.empty((training_idx.shape[0]))
+    valid_y = np.empty((validation_idx.shape[0]))
 
     train_sampler = datasets.SubsetRandomSampler(training_idx)
     valid_sampler = datasets.SubsetRandomSampler(validation_idx)
