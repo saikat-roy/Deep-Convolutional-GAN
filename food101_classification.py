@@ -75,12 +75,12 @@ if __name__ == "__main__":
     disc_new.eval()
     for epoch_id, (X,y) in enumerate(train_loader):
         X = X.to("cuda:0")
-        train_x[(epoch_id-1)*X.size(0):(epoch_id)*X.size(0),:] = disc_new(X).detach().cpu().numpy()
-        train_y[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0)] = y
+        train_x[(epoch_id)*X.size(0):(epoch_id+1)*X.size(0),:] = disc_new(X).detach().cpu().numpy()
+        train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y
 
     for epoch_id, (X, y) in enumerate(validation_loader):
-        valid_x[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
-        valid_y[(epoch_id - 1) * X.size(0):(epoch_id) * X.size(0)] = y
+        valid_x[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
+        valid_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y
 
 
 
