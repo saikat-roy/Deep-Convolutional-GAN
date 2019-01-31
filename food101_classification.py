@@ -6,16 +6,18 @@ from torchsummary import summary
 
 from dcgan import Discriminator
 
+from sklearn.svm import SVC
+
 nc = 3
 ndf = 64
 ngf = 128
 image_size = 64
 batch_size = 128
 
-class Discriminator_new(nn.Module):
+class Discriminator_trimmed(nn.Module):
 
     def __init__(self,list_children):
-        super(Discriminator_new, self).__init__()
+        super(Discriminator_trimmed, self).__init__()
         self.main = nn.Sequential(*list_children[0:-2])
 
     def forward(self, input):
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     for i in disc_model.children():
         list_children.extend([*i])
     print(list_children)
-    disc_new = Discriminator_new(list_children)
+    disc_new = Discriminator_trimmed(list_children)
 
     food_101_path = r"/home/data/food-101/images"
 
@@ -79,9 +81,13 @@ if __name__ == "__main__":
         train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y
 
     for epoch_id, (X, y) in enumerate(validation_loader):
+        X = X.to("cuda:0")
         valid_x[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
         valid_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y
 
+    clf = SVC(gamma='auto')
+    clf.fit(train_x, train_y)
+    print(clf.score(valid_x, valid_y))
 
 
 
