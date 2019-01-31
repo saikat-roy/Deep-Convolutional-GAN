@@ -20,7 +20,7 @@ class Discriminator_new(nn.Module):
 
     def forward(self, input):
         x = self.main(input)
-        return x.view(-1)
+        return x.view(batch_size,-1)
 
 
 if __name__ == "__main__":
