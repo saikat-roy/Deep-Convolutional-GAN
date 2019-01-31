@@ -40,8 +40,8 @@ if __name__ == "__main__":
     index_arr = np.arange(1000)
     np.random.shuffle(index_arr)
     print(index_arr)
-    training_idx = index_arr[0:80]
-    validation_idx = index_arr[80:100]
+    training_idx = index_arr[0:75]
+    validation_idx = index_arr[25:100]
 
     for i in range(1000,101000,1000):
         training_idx_2=index_arr[0:75]+i
