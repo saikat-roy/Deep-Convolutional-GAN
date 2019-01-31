@@ -32,14 +32,14 @@ if __name__ == "__main__":
     list_children = []
     for i in disc_model.children():
         list_children.extend([*i])
-    print(list_children)
+    # print(list_children)
     disc_new = Discriminator_trimmed(list_children)
 
     food_101_path = r"/home/data/food-101/images"
 
     index_arr = np.arange(1000)
     np.random.shuffle(index_arr)
-    print(index_arr)
+    # print(index_arr)
     training_idx = index_arr[0:75]
     validation_idx = index_arr[75:100]
 
@@ -55,8 +55,8 @@ if __name__ == "__main__":
     train_y = np.empty((training_idx.shape[0]))
     valid_y = np.empty((validation_idx.shape[0]))
 
-    print(training_idx.shape[0])
-    print(validation_idx.shape[0])
+    # print(training_idx.shape[0])
+    # print(validation_idx.shape[0])
 
     train_sampler = torch.utils.data.SubsetRandomSampler(training_idx)
     valid_sampler = torch.utils.data.SubsetRandomSampler(validation_idx)
@@ -74,8 +74,8 @@ if __name__ == "__main__":
     validation_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                                     sampler=valid_sampler,drop_last=False)
 
-    print(len(train_loader))
-    print(len(validation_loader))
+    # print(len(train_loader))
+    # print(len(validation_loader))
 
     disc_new = disc_new.to("cuda:0")
     print(summary(disc_new, input_size=(3, 64, 64)))
@@ -88,18 +88,18 @@ if __name__ == "__main__":
         train_x[(epoch_id)*X.size(0):min((epoch_id+1)*X.size(0),train_x.shape[0]),:] = disc_new(X).detach().cpu().numpy()
         train_y[(epoch_id)*X.size(0):min((epoch_id+1)*X.size(0),train_y.shape[0])] = y.numpy()
         #print(train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)])
-    print(i)
+    # print(i)
     for epoch_id, (X, y) in enumerate(validation_loader):
         X = X.to("cuda:0")
         valid_x[(epoch_id) * X.size(0):min(valid_x.shape[0],(epoch_id+1) * X.size(0)), :] = disc_new(X).detach().cpu().numpy()
         valid_y[(epoch_id) * X.size(0):min(valid_y.shape[0],(epoch_id+1) * X.size(0))] = y.numpy()
 
-    print(valid_y)
-
-    print(np.unique(train_y))
+    # print(valid_y)
+    #
+    # print(np.unique(train_y))
     clf = SVC(gamma='auto')
     clf.fit(train_x, train_y)
-    print(clf.score(valid_x, valid_y))
+    print("Score on validation set={}".format(clf.score(valid_x, valid_y)))
 
 
 
