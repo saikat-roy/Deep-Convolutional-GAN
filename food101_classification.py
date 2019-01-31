@@ -71,6 +71,9 @@ if __name__ == "__main__":
     validation_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                                     sampler=valid_sampler)
 
+    print(len(train_loader))
+    print(len(validation_loader))
+
     disc_new = disc_new.to("cuda:0")
     print(summary(disc_new, input_size=(3, 64, 64)))
 
