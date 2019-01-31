@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
-
 from torchsummary import summary
 
 from dcgan import Discriminator
@@ -54,8 +53,8 @@ if __name__ == "__main__":
     train_y = np.empty((training_idx.shape[0]))
     valid_y = np.empty((validation_idx.shape[0]))
 
-    train_sampler = datasets.SubsetRandomSampler(training_idx)
-    valid_sampler = datasets.SubsetRandomSampler(validation_idx)
+    train_sampler = torch.utils.data.SubsetRandomSampler(training_idx)
+    valid_sampler = torch.utils.data.SubsetRandomSampler(validation_idx)
 
     transforms_list = transforms.Compose([
         transforms.Resize(image_size),
