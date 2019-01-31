@@ -40,14 +40,14 @@ if __name__ == "__main__":
     index_arr = np.arange(1000)
     np.random.shuffle(index_arr)
     print(index_arr)
-    training_idx = index_arr[0:75]
-    validation_idx = index_arr[75:100]
+    training_idx = index_arr[0:750]
+    validation_idx = index_arr[750:]
 
-    for i in range(1000,101001,1000):
-        training_idx_2=index_arr[0:75]+i
+    for i in range(1,101):
+        training_idx_2=index_arr[0:750]+(i*1000)
         training_idx = np.append(training_idx, training_idx_2)
 
-        validation_idx_2 = index_arr[75:100] + i
+        validation_idx_2 = index_arr[750:1000]+(i*1000)
         validation_idx = np.append(validation_idx, validation_idx_2)
 
     train_x = np.empty((training_idx.shape[0], 512 * 4 * 4))
