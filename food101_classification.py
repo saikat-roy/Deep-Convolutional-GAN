@@ -79,13 +79,14 @@ if __name__ == "__main__":
         X = X.to("cuda:0")
         train_x[(epoch_id)*X.size(0):(epoch_id+1)*X.size(0),:] = disc_new(X).detach().cpu().numpy()
         train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y.numpy()
-        print(train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)])
+        #print(train_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)])
 
     for epoch_id, (X, y) in enumerate(validation_loader):
         X = X.to("cuda:0")
         valid_x[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0), :] = disc_new(X).detach().cpu().numpy()
         valid_y[(epoch_id) * X.size(0):(epoch_id+1) * X.size(0)] = y.numpy()
 
+    print(np.unique(train_y))
     clf = SVC(gamma='auto')
     clf.fit(train_x, train_y)
     print(clf.score(valid_x, valid_y))
