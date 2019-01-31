@@ -10,9 +10,9 @@ def penultimate_layer_features(model, dataloader):
 
 
 if __name__ == "__main__":
-    model_save_path = r"./saved_data/ImageNet/discriminator_ImageNet"
-    disc_model = Discriminator()
-    disc_model.load_state_dict(torch.load(model_save_path))
+    # model_save_path = r"./saved_data/ImageNet/discriminator_ImageNet"
+    # disc_model = Discriminator()
+    # disc_model.load_state_dict(torch.load(model_save_path))
 
     food_101_path = r"/home/data/food-101/images"
 
